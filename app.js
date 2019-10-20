@@ -1,41 +1,100 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-
-var app = express();
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
-
-app.use(logger('dev'));
+/**
+ * Module dependecies
+ */
+const express = require("express");
+const path = require("path");
+const logger = require("morgan");
+const sass = require("node-sass-middleware");
+const errorHandler = require("errorhandler");
+const chalk = require("chalk");
+/**
+ * Controllers (routes handlers)
+ */
+const homeController = require("./controllers/home");
+/**
+ * Creates Express app
+ */
+const app = express();
+/**
+ * Express configurations.
+ */
+app.set("host", process.env.OPENSHIFT_NODEJS_IP || "0.0.0.0");
+app.set("port", process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 3000);
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "pug");
+app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(
+  sass({
+    src: path.join(__dirname, "public"),
+    dest: path.join(__dirname, "public"),
+    outputStyle: "compressed"
+  })
+);
+app.use(
+  "/",
+  express.static(path.join(__dirname, "public"), { maxAge: 31557600000 })
+);
+app.use(
+  "/js/lib",
+  express.static(path.join(__dirname, "node_modules/chart.js/dist"), {
+    maxAge: 31557600000
+  })
+);
+app.use(
+  "/js/lib",
+  express.static(path.join(__dirname, "node_modules/popper.js/dist/umd"), {
+    maxAge: 31557600000
+  })
+);
+app.use(
+  "/js/lib",
+  express.static(path.join(__dirname, "node_modules/bootstrap/dist/js"), {
+    maxAge: 31557600000
+  })
+);
+app.use(
+  "/js/lib",
+  express.static(path.join(__dirname, "node_modules/jquery/dist"), {
+    maxAge: 31557600000
+  })
+);
+app.use(
+  "/webfonts",
+  express.static(
+    path.join(__dirname, "node_modules/@fortawesome/fontawesome-free/webfonts"),
+    { maxAge: 31557600000 }
+  )
+);
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+/**
+ * Primary routes
+ */
+app.get("/", homeController.index);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
-
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+/**
+ * Error Handler
+ */
+if (process.env.NODE_ENV === "development") {
+  app.use(errorHandler());
+} else {
+  app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(500).send("Server error");
+  });
+}
+/**
+ * Starting Express Server
+ */
+app.listen(app.get("port"), () => {
+  console.log(
+    "%s App listening at http://localhost:%d in %s mode",
+    chalk.green("✓"),
+    app.get("port"),
+    app.get("env")
+  );
+  console.log("Press CTRL - C to stop\n");
 });
 
 module.exports = app;
