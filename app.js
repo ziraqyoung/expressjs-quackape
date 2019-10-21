@@ -7,6 +7,11 @@ const logger = require("morgan");
 const sass = require("node-sass-middleware");
 const errorHandler = require("errorhandler");
 const chalk = require("chalk");
+const mongoose = require("mongoose");
+/**
+ * Load environment variable from .env for configurations and API Keys
+ */
+require("dotenv").config();
 /**
  * Controllers (routes handlers)
  */
@@ -15,6 +20,21 @@ const homeController = require("./controllers/home");
  * Creates Express app
  */
 const app = express();
+/**
+ * MongoDB configurations
+ */
+mongoose.set("useFindAndModify", false);
+mongoose.set("useCreateIndex", true);
+mongoose.set("useNewUrlParser", true);
+mongoose.connect(process.env.MONGODB_URI);
+mongoose.connection.on("error", err => {
+  console.error(err);
+  console.log(
+    "%s MongoDB connection error. Please make sure MongoDB is running.",
+    chalk.red("✗")
+  );
+  process.exit();
+});
 /**
  * Express configurations.
  */
