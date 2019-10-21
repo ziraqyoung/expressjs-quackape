@@ -5,7 +5,7 @@
   "scripts": {
     "postinstall": "npm rebuild node-sass",
     "start": "nodemon ./app.js",
-    "test": "nodemon --exec \"mocha -R min\""
+    "test": "nodemon --exec \"mocha --recursive -R min\""
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.9.0",
