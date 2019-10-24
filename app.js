@@ -19,6 +19,11 @@ require("dotenv").config();
  * Controllers (routes handlers)
  */
 const homeController = require("./controllers/home");
+const userController = require("./controllers/user");
+/**
+ * Passport configuration and API keys
+ */
+const passportConfig = require("./config/passport");
 /**
  * Creates Express app
  */
@@ -109,6 +114,8 @@ app.use(
  * Primary routes
  */
 app.get("/", homeController.index);
+app.get("/login", userController.getLogin);
+app.post("/login", userController.postLogin);
 
 /**
  * Error Handler
