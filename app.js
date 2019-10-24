@@ -9,6 +9,8 @@ const errorHandler = require("errorhandler");
 const chalk = require("chalk");
 const mongoose = require("mongoose");
 const passport = require("passport");
+const session = require("express-session");
+const MongoStore = require("connect-mongo")(session);
 /**
  * Load environment variable from .env for configurations and API Keys
  */
@@ -48,6 +50,18 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(
+  session({
+    resave: true,
+    saveUninitialized: true,
+    secret: process.env.SESSION_SECRET,
+    cookie: { maxAge: 1209600000 },
+    store: new MongoStore({
+      url: process.env.MONGODB_URI,
+      autoReconnect: true
+    })
+  })
+);
 app.use(
   sass({
     src: path.join(__dirname, "public"),
