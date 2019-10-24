@@ -11,6 +11,7 @@ const mongoose = require("mongoose");
 const passport = require("passport");
 const session = require("express-session");
 const MongoStore = require("connect-mongo")(session);
+const flash = require("express-flash");
 /**
  * Load environment variable from .env for configurations and API Keys
  */
@@ -55,6 +56,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(flash());
 app.use(
   session({
     resave: true,
