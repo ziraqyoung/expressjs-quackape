@@ -1,0 +1,21 @@
+extends ../layout
+
+block content
+  .pb-2.mb-4.mt-2.border-bottom
+    h1 Sign In
+  form(method='POST')
+    input(type='hidden', name='_csrf', value='_csrf')
+    .form-group.row
+      label.col-md-3.col-form-label.font-weight-bold.text-right Email
+      .col-md-7
+        input.form-control(type='email', name='email', id='email', autocomplete='email', placeholder='Email', autofocus, required)
+    .form-group.row
+      label.col-md-3.col-form-label.font-weight-bold.text-right Password
+      .col-md-7
+        input.form-control(type='password', name='password', id='password',autocomplete='current-password', placeholder='Password', required)
+    .form-group
+      .offset-md-3.col-md-7.pl-2
+        button.col-md-3.btn.btn-primary(type='Submit')
+          i.far.fa-user.fa-sm
+          | Login
+        a.btn.btn-link(href='/forgot') Forgot your password?
