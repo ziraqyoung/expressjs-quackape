@@ -41,3 +41,13 @@ exports.postLogin = (req, res, next) => {
     });
   })(req, res, next);
 };
+/**
+ * GET /signup
+ *  Signup page
+ */
+exports.getSignup = (req, res) => {
+  if (req.user) {
+    return res.redirect("/");
+  }
+  res.render("account/signup", { title: "Create Account" });
+};
