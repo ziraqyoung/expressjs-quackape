@@ -52,11 +52,6 @@ app.set("port", process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 3000);
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
 app.use(logger("dev"));
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(flash());
 app.use(
   session({
     resave: true,
@@ -69,6 +64,11 @@ app.use(
     })
   })
 );
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(flash());
 app.use(
   sass({
     src: path.join(__dirname, "public"),
