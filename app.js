@@ -12,6 +12,7 @@ const passport = require("passport");
 const session = require("express-session");
 const MongoStore = require("connect-mongo")(session);
 const flash = require("express-flash");
+const compression = require("compression");
 /**
  * Load environment variable from .env for configurations and API Keys
  */
@@ -52,6 +53,7 @@ app.set("port", process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 3000);
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
 app.use(logger("dev"));
+app.use(compression());
 app.use(
   session({
     resave: true,
