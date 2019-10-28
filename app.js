@@ -121,6 +121,7 @@ app.get("/", homeController.index);
 app.get("/login", userController.getLogin);
 app.post("/login", userController.postLogin);
 app.get("/signup", userController.getSignup);
+app.post("/signup", userController.postSignup);
 
 /**
  * Error Handler
