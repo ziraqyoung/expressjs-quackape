@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema(
 /**
  * Hooks
  */
-userSchema.pre("save", function save() {
+userSchema.pre("save", function save(next) {
   const user = this;
   if (!user.isModified("password")) {
     return next();
@@ -47,7 +47,7 @@ userSchema.methods.comparePassword = function comparePassword(
   candidatePassword,
   cb
 ) {
-  bcrypt.compare(candidatePassword, (err, isMatch) => {
+  bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
     cb(err, isMatch);
   });
 };
