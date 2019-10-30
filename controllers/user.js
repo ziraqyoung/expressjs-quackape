@@ -93,3 +93,9 @@ exports.postSignup = (req, res, next) => {
     });
   });
 };
+/**
+ * GET /account
+ */
+exports.getAccount = (req, res) => {
+  res.render("account/profile", { title: "Account Management" });
+};

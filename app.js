@@ -143,6 +143,7 @@ app.get("/login", userController.getLogin);
 app.post("/login", userController.postLogin);
 app.get("/signup", userController.getSignup);
 app.post("/signup", userController.postSignup);
+app.get("/account", passportConfig.isAuthenticated, userController.getAccount);
 
 /**
  * Error Handler
