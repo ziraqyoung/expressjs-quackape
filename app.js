@@ -82,6 +82,23 @@ app.use((req, res, next) => {
   res.locals.user = req.user;
   next();
 });
+app.use((req, res, next) => {
+  if (
+    !req.user &&
+    req.path !== "/login" &&
+    req.path !== "/signup" &&
+    !req.path.match(/^\/auth/) &&
+    !req.path.match(/\./)
+  ) {
+    req.session.returnTo = req.originalUrl;
+  } else if (
+    req.user &&
+    (req.path === "/account" || req.path.match(/^\/api/))
+  ) {
+    req.session.returnTo = req.originalUrl;
+  }
+  next();
+});
 app.use(
   "/",
   express.static(path.join(__dirname, "public"), { maxAge: 31557600000 })
