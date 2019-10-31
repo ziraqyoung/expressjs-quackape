@@ -13,6 +13,7 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo")(session);
 const flash = require("express-flash");
 const compression = require("compression");
+const lusca = require("lusca");
 /**
  * Load environment variable from .env for configurations and API Keys
  */
@@ -78,6 +79,10 @@ app.use(
     outputStyle: "compressed"
   })
 );
+app.use(lusca.csrf());
+app.use(lusca.xframe("SAMEORIGIN"));
+app.use(lusca.xssProtection(true));
+app.disable("x-powered-by");
 app.use((req, res, next) => {
   res.locals.user = req.user;
   next();
