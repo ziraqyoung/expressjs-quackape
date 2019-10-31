@@ -144,6 +144,7 @@ app.post("/login", userController.postLogin);
 app.get("/signup", userController.getSignup);
 app.post("/signup", userController.postSignup);
 app.get("/account", passportConfig.isAuthenticated, userController.getAccount);
+app.get("/logout", userController.logout);
 
 /**
  * Error Handler

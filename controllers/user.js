@@ -94,6 +94,18 @@ exports.postSignup = (req, res, next) => {
   });
 };
 /**
+ * GET /logout
+ * logsout user
+ */
+exports.logout = (req, res) => {
+  req.logout();
+  req.session.destroy(err => {
+    if (err) console.log("Error: failed to destroy session during logout", err);
+    req.user = null;
+    res.redirect("/");
+  });
+};
+/**
  * GET /account
  */
 exports.getAccount = (req, res) => {
