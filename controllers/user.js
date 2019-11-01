@@ -111,3 +111,44 @@ exports.logout = (req, res) => {
 exports.getAccount = (req, res) => {
   res.render("account/profile", { title: "Account Management" });
 };
+/**
+ * POST /account/profile
+ * update profile information
+ */
+exports.postUpdateProfile = (req, res, next) => {
+  const validationErrors = [];
+  if (!validator.isEmail(req.body.email))
+    validationErrors.push({ msg: "Please enter a valid email address." });
+  if (validationErrors.length) {
+    req.flash("errors", validationErrors);
+    return res.redirect("/account");
+  }
+  req.body.email = validator.normalizeEmail(req.body.email, {
+    gmail_remove_dots: false
+  });
+
+  User.findById(req.user.id, (err, user) => {
+    if (err) return next(err);
+    user.email = req.body.email || "";
+    user.profile.name = req.body.name || "";
+    user.profile.gender = req.body.gender || "";
+    user.profile.location = req.body.location || "";
+    user.profile.website = req.body.website || "";
+    user.save(err => {
+      if (err) {
+        if (err.code === 11000) {
+          req.flash("errors", {
+            msg:
+              "The email address you have entered is already associated with an account"
+          });
+          return res.redirect("/account");
+        }
+        return next(err);
+      }
+      req.flash("success", {
+        msg: "Account information has been updated successfully"
+      });
+      res.redirect("/account");
+    });
+  });
+};
