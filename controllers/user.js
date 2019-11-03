@@ -22,7 +22,7 @@ exports.postLogin = (req, res, next) => {
     validationErrors.push({ msh: "Please a valid email" });
   if (validator.isEmpty(req.body.password))
     validationErrors.push({ msg: "Pasword can't be blank" });
-  if (validationErrors.lenght) {
+  if (validationErrors.length) {
     req.flash("errors", validationErrors);
     return res.redirect("/login");
   }
@@ -67,7 +67,7 @@ exports.postSignup = (req, res, next) => {
   if (req.body.password !== req.body.confirmPassword)
     validationErrors.push({ msg: "Password do not match" });
 
-  if (validationErrors.lenght) {
+  if (validationErrors.length) {
     req.flash("errors", validationErrors);
     return res.redirect("/signup");
   }
@@ -148,6 +148,31 @@ exports.postUpdateProfile = (req, res, next) => {
       req.flash("success", {
         msg: "Account information has been updated successfully"
       });
+      res.redirect("/account");
+    });
+  });
+};
+/**
+ * POST /account/password
+ */
+exports.postUpdatePassword = (req, res, next) => {
+  const validationErrors = [];
+  if (!validator.isLength(req.body.password, { min: 8 }))
+    validationErrors.push({
+      msg: "Password must be at least 8 characters long"
+    });
+  if (req.body.password !== req.body.confirmPassword)
+    validationErrors.push({ msg: "Passwords do not match" });
+  if (validationErrors.length) {
+    req.flash("errors", validationErrors);
+    return res.redirect("/account");
+  }
+  User.findById(req.user.id, (err, user) => {
+    if (err) return next(err);
+    user.password = req.body.password;
+    user.save(err => {
+      if (err) return next(err);
+      req.flash("success", { msg: "Password changed successfully" });
       res.redirect("/account");
     });
   });

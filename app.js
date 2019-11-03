@@ -155,6 +155,11 @@ app.post(
   passportConfig.isAuthenticated,
   userController.postUpdateProfile
 );
+app.post(
+  "/account/password",
+  passportConfig.isAuthenticated,
+  userController.postUpdatePassword
+);
 /**
  * Error Handler
  */
