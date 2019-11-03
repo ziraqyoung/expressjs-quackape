@@ -160,6 +160,11 @@ app.post(
   passportConfig.isAuthenticated,
   userController.postUpdatePassword
 );
+app.post(
+  "/account/delete",
+  passportConfig.isAuthenticated,
+  userController.postDeleteAccount
+);
 /**
  * Error Handler
  */
