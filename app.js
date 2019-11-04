@@ -23,6 +23,7 @@ require("dotenv").config();
  */
 const homeController = require("./controllers/home");
 const userController = require("./controllers/user");
+const contactController = require("./controllers/contact");
 /**
  * Passport configuration and API keys
  */
@@ -144,6 +145,7 @@ app.use(
  * Primary routes
  */
 app.get("/", homeController.index);
+app.get("/contact", contactController.getContact);
 app.get("/login", userController.getLogin);
 app.post("/login", userController.postLogin);
 app.get("/signup", userController.getSignup);
