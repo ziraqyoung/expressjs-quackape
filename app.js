@@ -146,6 +146,7 @@ app.use(
  */
 app.get("/", homeController.index);
 app.get("/contact", contactController.getContact);
+app.post("/contact", contactController.postContact);
 app.get("/login", userController.getLogin);
 app.post("/login", userController.postLogin);
 app.get("/signup", userController.getSignup);
