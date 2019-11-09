@@ -189,3 +189,13 @@ exports.postDeleteAccount = (req, res, next) => {
     res.redirect("/");
   });
 };
+/**
+ * GET /forgot
+ * Forgot password page
+ */
+exports.getForgot = (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.redirect("/");
+  }
+  res.render("account/forgot", { title: "Forgot Password" });
+};

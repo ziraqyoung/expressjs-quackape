@@ -151,6 +151,7 @@ app.get("/login", userController.getLogin);
 app.post("/login", userController.postLogin);
 app.get("/signup", userController.getSignup);
 app.post("/signup", userController.postSignup);
+app.get("/forgot", userController.getForgot);
 app.get("/account", passportConfig.isAuthenticated, userController.getAccount);
 app.get("/logout", userController.logout);
 app.post(
