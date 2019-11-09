@@ -1,0 +1,19 @@
+extends ../layout
+
+block content
+  .pb-2.mt-2.mb-4.border-bottom
+    h3 Password Reset
+  form(method='POST')
+    input(type='hidden', name='_csrf', value=_csrf)
+    .form-group.row
+      label.col-md-3.col-form-label.font-weight-bold.text-right(for='password') New Password
+      .col-md-7
+        input.form-control(type='password', name='password', id='password', autocomplete='new-password', placeholder='New Password' autofocus, required)
+    .form-group.row
+      label.col-md-3.col-form-label.font-weight-bold.text-right(for='confirm') Confirm New Password
+      .col-md-7
+        input.form-control(type='password', name='confirm', id='confirm', autocomplete='new-password', placeholder='Confirm New Password', required)
+    .form-group.offset-sm-3.col-md-7.pl-2
+      button.btn.btn-primary.btn-reset(type='submit')
+        i.far.fa-keyboard.fa-sm
+        | Change Password
