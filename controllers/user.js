@@ -308,3 +308,27 @@ exports.postForgot = (req, res, next) => {
     .then(() => res.redirect("/forgot"))
     .catch(next);
 };
+/**
+ * GET /reset/:token
+ * Reset password page
+ */
+exports.getReset = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return res.redirect("/");
+  }
+  User.findOne({ passwordResetToken: req.params.token })
+    .where("passwordResetExpires")
+    .gt(Date.now())
+    .exec((err, user) => {
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        req.flash("errors", {
+          msg: "Password reset token has expired or has expired"
+        });
+        return res.redirect("/forgot");
+      }
+      res.render("account/reset", { title: "Password Reset" });
+    });
+};
