@@ -1,5 +1,11 @@
+const { promisify } = require("util");
+const crypto = require("crypto");
 const validator = require("validator");
 const passport = require("passport");
+const nodemailer = require("nodemailer");
+
+const randomBytesAsync = promisify(crypto.randomBytes);
+
 const User = require("../models/User");
 /**
  * GET /login (login page)
@@ -198,4 +204,107 @@ exports.getForgot = (req, res) => {
     return res.redirect("/");
   }
   res.render("account/forgot", { title: "Forgot Password" });
+};
+/**
+ * POST /forgot
+ * Create a random string and send a link with token for password reset
+ */
+exports.postForgot = (req, res, next) => {
+  const validationErrors = [];
+  if (!validator.isEmail(req.body.email))
+    validationErrors.push({ msg: "Please enter a valid email address" });
+  if (validationErrors.length) {
+    req.flash("errors", validationErrors);
+    return res.redirect("/forgot");
+  }
+  req.body.email = validator.normalizeEmail(req.body.email, {
+    gmail_remove_dots: false
+  });
+
+  const createRandomBytes = randomBytesAsync(16).then(buf =>
+    buf.toString("hex")
+  );
+
+  const setRandomToken = token =>
+    User.findOne({ email: req.body.email }).then(user => {
+      if (!user) {
+        req.flash("errors", { msg: "Account with that email doesnot exist" });
+      } else {
+        user.passwordResetToken = token;
+        user.passwordResetExpires = Date.now() + 3600000; // 1 hr
+        user = user.save();
+      }
+      return user;
+    });
+
+  const sendForgotPasswordEmail = user => {
+    if (!user) {
+      return;
+    }
+    const token = user.passwordResetToken;
+
+    let transporter = nodemailer.createTransport({
+      service: "SendGrid",
+      auth: {
+        user: process.env.SENDGRID_USER,
+        pass: process.env.SENDGRID_PASSWORD
+      }
+    });
+
+    const mailOptions = {
+      from: "quakeape@app.com",
+      to: user.email,
+      subject: "Reset your password on QuakeApe",
+      text: `You are receiving this email because you (or someone else) has requested the reset of the password of your account on QuakeApe \n\n
+      Please click on the link below or paste in the browser to complete the process: \n\n
+      http://${req.headers.host}/reset/${token} \n\n
+      If you did not request this, please ignore this email and your password will remain unchanged.
+      `
+    };
+
+    return transporter
+      .sendMail(mailOptions)
+      .then(() => {
+        req.flash("info", {
+          msg: `An e-mail has been sent to ${user.email} with further instructions.`
+        });
+      })
+      .catch(err => {
+        if (err.message === "self signed certificate in certificate chain") {
+          console.log(
+            "WARNING: self signed certificate in the certificate chain. Retrying with self signed certificate. Use a valid certificate in productions"
+          );
+          transporter = nodemailer.createTransport({
+            service: "SendGrid",
+            auth: {
+              user: process.env.SENDGRID_USER,
+              pass: process.env.SENDGRID_PASSWORD
+            },
+            tls: {
+              rejectUnauthorized: false
+            }
+          });
+          transporter.sendMail(mailOptions).then(() => {
+            req.flash("info", {
+              msg: `An e-mail has been sent to ${user.email} with further instructions`
+            });
+          });
+        }
+        console.log(
+          "ERROR: Could not send forgot password email after security downgrade.\n",
+          err
+        );
+        req.flash("errors", {
+          msg:
+            "Error sending the password reset message. Please try again shortly."
+        });
+        return err;
+      });
+  };
+
+  createRandomBytes
+    .then(setRandomToken)
+    .then(sendForgotPasswordEmail)
+    .then(() => res.redirect("/forgot"))
+    .catch(next);
 };
