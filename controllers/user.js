@@ -332,3 +332,108 @@ exports.getReset = (req, res, next) => {
       res.render("account/reset", { title: "Password Reset" });
     });
 };
+/**
+ * POST /reset/:token
+ * Process Password request
+ */
+exports.postReset = (req, res, next) => {
+  const validationErrors = [];
+  if (!validator.isLength(req.body.password, { min: 8 }))
+    validationErrors.push({
+      msg: "Password must be atleast 8 characters long"
+    });
+  if (req.body.password !== req.body.confirmPassword)
+    validationErrors.push({ msg: "Password do not match" });
+
+  if (validationErrors.length) {
+    req.flash("errors", validationErrors);
+    return res.redirect("back");
+  }
+
+  const resetPassword = () =>
+    User.findOne({ passwordResetToken: req.params.token })
+      .where("passwordResetExpires")
+      .gt(Date.now())
+      .then(user => {
+        if (!user) {
+          req.flash("errors", {
+            msg: "Password reset token is invalid or has expired"
+          });
+          return res.redirect("back");
+        }
+        user.password = req.body.password;
+        user.passwordResetToken = undefined;
+        user.passwordResetExpires = undefined;
+        return user.save().then(() => {
+          new Promise((resolve, reject) => {
+            req.logIn(user, err => {
+              if (err) return reject(err);
+              resolve(user);
+            });
+          });
+        });
+      });
+
+  const sendPasswordResetEmail = user => {
+    if (!user) return;
+    let transporter = nodemailer.createTransport({
+      service: "SendGrid",
+      auth: {
+        user: process.env.SENDGRID_USER,
+        pass: process.env.SENDGRID_PASSWORD
+      }
+    });
+    const mailOptions = {
+      to: user.email,
+      from: "quackape@app.com",
+      subject: "Your Quackape password has been changed",
+      text: `Hello. \n\n This is a confirmation that your password of your account ${user.email} has just been changed.`
+    };
+    return transporter
+      .sendMail(mailOptions)
+      .then(() => {
+        req.flash("success", {
+          msg: "Success! Your password has been changed successfully."
+        });
+      })
+      .catch(err => {
+        if (err.message === "self signed certificate in certificate chain") {
+          console.log(
+            "WARNING: Self signed certificate in certificate chain. Retrying with the self signed certificate. Use a valid certificate if in production."
+          );
+          transporter = nodemailer.createTransport({
+            service: "SendGrid",
+            auth: {
+              user: process.env.SENDGRID_USER,
+              pass: process.env.SENDGRID_PASSWORD
+            },
+            tls: {
+              rejectUnauthorized: false
+            }
+          });
+          return transporter.sendMail(mailOptions).then(() => {
+            req.flash("success", {
+              msg: "Success! Your password has been changed successfully."
+            });
+          });
+        }
+        console.log(
+          "ERROR: Could not send password reset confirmation email after security downgrade.\n",
+          err
+        );
+        req.flash("warning", {
+          msg:
+            "Your password has been changed, however we were unable to send you a confirmation email. We will be looking into it shortly."
+        });
+        return err;
+      });
+  };
+  resetPassword()
+    .then(sendPasswordResetEmail)
+    .then(() => {
+      if (!res.finished) {
+        res.redirect("/");
+      }
+    })
+    .catch(err => next(err));
+};
